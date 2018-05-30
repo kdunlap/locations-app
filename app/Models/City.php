@@ -3,7 +3,6 @@
 namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
-use Illuminate\Database\Eloquent\SoftDeletes;
 
 /**
  * Class City
@@ -11,8 +10,6 @@ use Illuminate\Database\Eloquent\SoftDeletes;
  */
 class City extends Model
 {
-    use SoftDeletes;
-
     /**
      * The database table used by the model.
      *
@@ -42,17 +39,6 @@ class City extends Model
         'slug'         => 'string',
         'latitude'     => 'float',
         'longitude'    => 'float'
-    ];
-
-    /**
-     * The attributes to exclude from toJson and toArray
-     *
-     * @var array
-     */
-    protected $hidden = [
-        'created_at',
-        'updated_at',
-        'deleted_at'
     ];
 
     /**
