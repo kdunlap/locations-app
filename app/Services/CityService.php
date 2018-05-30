@@ -54,37 +54,25 @@ class CityService
      */
     public function getNearbyLocations($latitude, $longitude, $inner_radius = 30, $outer_radius = 50)
     {
+        $haversine_sql = '( 6371 * acos( cos( radians( ? ) ) * cos( radians( latitude ) ) * cos( radians( longitude ) - radians( ? ) ) + sin( radians( ? ) ) * sin( radians( latitude ) ) ) )';
+
         // Haversine distance formula in km
-        $query = City::select(\DB::raw('*, ( 6371 * acos( cos( radians( ? ) ) * cos( radians( latitude ) ) * cos( radians( longitude ) - radians( ? ) ) + sin( radians( ? ) ) * sin( radians( latitude ) ) ) ) AS distance'))
+        return City::
             // Add a rough bounding box to limit the number of distance calculations performed
             // This is not perfect by any means, but gives the desired results much quicker
             // Latitude: 1 deg = 110.574 km
             // Longitude: 1 deg = 111.320*cos(latitude) km
-            ->where('latitude', '>', '?')
-            ->where('latitude', '<', '?')
-            ->where('longitude', '>', '?')
-            ->where('longitude', '<', '?')
-            ->having('distance', '>', '?')
-            ->having('distance', '<', '?')
+              where('latitude', '>', $latitude - 1)
+            ->where('latitude', '<', $latitude + 1)
+            ->where('longitude', '>', $longitude - 1)
+            ->where('longitude', '<', $longitude + 1)
+            ->whereRaw($haversine_sql . '>' . $inner_radius, [ $latitude, $longitude, $latitude ])
+            ->whereRaw($haversine_sql . '<' . $outer_radius, [ $latitude, $longitude, $latitude ])
             ->orderBy( 'population', 'desc' )
-            ->orderBy('distance')
+//            ->orderBy('distance')
             ->with('state')
-            ->limit(20);
-
-        // Matches the order of ? added to the query above
-        $query->setBindings([
-            $latitude,      // select
-            $longitude,     // select
-            $latitude,      // select
-            $latitude - 1,  // bounding box left
-            $latitude + 1,  // bounding box right
-            $longitude - 1, // bounding box top
-            $longitude + 1, // bounding box bottom
-            $inner_radius,  // having distance
-            $outer_radius,  // having distance
-        ]);
-
-        return $query->get();
+            ->limit(20)
+            ->get();
     }
 
     /**
