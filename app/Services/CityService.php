@@ -66,10 +66,11 @@ class CityService
             ->where('latitude', '<', $latitude + 1)
             ->where('longitude', '>', $longitude - 1)
             ->where('longitude', '<', $longitude + 1)
+            ->where('latitude', '!=', $latitude)
+            ->where('longitude', '!=', $longitude)
             ->whereRaw($haversine_sql . '>' . $inner_radius, [ $latitude, $longitude, $latitude ])
             ->whereRaw($haversine_sql . '<' . $outer_radius, [ $latitude, $longitude, $latitude ])
             ->orderBy( 'population', 'desc' )
-//            ->orderBy('distance')
             ->with('state')
             ->limit(20)
             ->get();
